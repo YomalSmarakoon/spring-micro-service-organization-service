@@ -1,0 +1,23 @@
+[
+  {
+    "organizationId": "org1",
+    "name": "Optima Growth",
+    "contactName": "John Carter",
+    "contactEmail": "john@optimagrowth.com",
+    "contactPhone": "111-222-3333"
+  },
+  {
+    "organizationId": "org2",
+    "name": "MicroTech Solutions",
+    "contactName": "Sarah White",
+    "contactEmail": "sarah@microtech.com",
+    "contactPhone": "222-333-4444"
+  },
+  {
+    "organizationId": "org3",
+    "name": "NovaSoft Systems",
+    "contactName": "David Lee",
+    "contactEmail": "david@novasoft.com",
+    "contactPhone": "333-444-5555"
+  }
+]

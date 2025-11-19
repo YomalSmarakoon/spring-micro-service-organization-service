@@ -1,0 +1,84 @@
+package com.optimagrowth.organization.service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.optimagrowth.organization.model.Organization;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Service;
+
+import java.io.InputStream;
+import java.util.List;
+
+@Service
+public class OrganizationService {
+
+    private List<Organization> organizations;
+
+    /**
+     * The {@code @PostConstruct} annotation is used to mark a method that should be
+     * executed once immediately after the Spring container has created the bean
+     * and completed dependency injection.
+     * <p>
+     * This provides a safe place to run initialization logic that depends on
+     * injected fields or configuration values, unlike constructors where such
+     * dependencies may not yet be available.
+     * </p>
+     *
+     * <p><strong>Typical use cases include:</strong></p>
+     * <ul>
+     *     <li>Loading data from files (e.g., JSON, YAML) into memory caches</li>
+     *     <li>Initializing maps, lists, or in-memory databases</li>
+     *     <li>Preloading configuration or reference data required by the service</li>
+     *     <li>Running setup logic that must occur after bean creation</li>
+     * </ul>
+     *
+     * <p>
+     * In this project, it is used to load organization data from a JSON file when
+     * the microservice starts. Spring initializes the bean, injects all
+     * dependencies, and <em>then</em> calls the annotated method exactly once
+     * during application startup.
+     * </p>
+     *
+     * <p><strong>Execution order:</strong></p>
+     * <ol>
+     *     <li>Spring creates the bean instance</li>
+     *     <li>Spring injects all {@code @Autowired} and {@code @Value} fields</li>
+     *     <li>The method annotated with {@code @PostConstruct} is invoked</li>
+     * </ol>
+     *
+     * <h3>🧠 Why not use the constructor?</h3>
+     * <p>
+     * A constructor runs <em>before</em> Spring performs dependency injection.
+     * This means any injected components (e.g., services, repositories, configuration
+     * properties) will still be {@code null} inside the constructor.
+     * </p>
+     *
+     * <p>
+     * {@code @PostConstruct}, however, guarantees that:
+     * </p>
+     *
+     * <ul>
+     *     <li>All dependencies have been injected</li>
+     *     <li>{@code @Value} properties are resolved</li>
+     *     <li>Environment and configuration beans are ready</li>
+     * </ul>
+     *
+     * <p>
+     * Therefore, it is the correct place to perform initialization that depends on
+     * resources managed by the Spring container.
+     * </p>
+     */
+    @PostConstruct
+    public void loadOrganizations() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        InputStream inputStream = getClass().getResourceAsStream("/data/organizations.json");
+        organizations = mapper.readValue(inputStream, new TypeReference<List<Organization>>() {});
+    }
+
+    public Organization getOrganizationById(String orgId) {
+        return organizations.stream()
+                .filter(org -> org.getOrganizationId().equalsIgnoreCase(orgId))
+                .findFirst()
+                .orElse(null);
+    }
+}
