@@ -3,6 +3,8 @@ package com.optimagrowth.organization.controller;
 import com.optimagrowth.organization.model.Organization;
 import com.optimagrowth.organization.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +18,12 @@ public class OrganizationController {
     private OrganizationService organizationService;
 
     @GetMapping("/{organizationId}")
-    public Organization getOrganization(@PathVariable("organizationId") String orgId) {
+    public ResponseEntity<Organization> getOrganization(@PathVariable("organizationId") String orgId) {
         Organization org = organizationService.getOrganizationById(orgId);
         if (org == null) {
-            throw new RuntimeException("Organization not found: " + orgId);
+//            throw new RuntimeException("Organization not found: " + orgId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return org;
+        return ResponseEntity.ok(org);
     }
 }
