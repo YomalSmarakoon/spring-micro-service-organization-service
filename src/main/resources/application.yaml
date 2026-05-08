@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: organization-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/spmia-realm # Use localhost if your Spring app runs outside Docker
+#          # Use keycloak if your Spring app runs inside Docker Compose with a service named keycloak: http://keycloak:8080/realms/spmia-realm
 
 eureka:
   client:

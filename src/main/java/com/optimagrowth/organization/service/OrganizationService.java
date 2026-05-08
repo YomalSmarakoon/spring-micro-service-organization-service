@@ -72,13 +72,65 @@ public class OrganizationService {
     public void loadOrganizations() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         InputStream inputStream = getClass().getResourceAsStream("/data/organizations.json");
-        organizations = mapper.readValue(inputStream, new TypeReference<List<Organization>>() {});
+        organizations = mapper.readValue(inputStream, new TypeReference<List<Organization>>() {
+        });
     }
 
     public Organization getOrganizationById(String orgId) {
         return organizations.stream()
                 .filter(org -> org.getOrganizationId().equalsIgnoreCase(orgId))
+                .filter(org -> "ACT".equalsIgnoreCase(org.getStatus()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<Organization> getAllOrganizations() {
+        return organizations.stream()
+                .filter(org -> "ACT".equalsIgnoreCase(org.getStatus()))
+                .toList();
+    }
+
+    public Organization create(Organization organization) {
+
+        boolean organizationExists = organizations.stream()
+                .anyMatch(org -> org.getOrganizationId()
+                        .equalsIgnoreCase(organization.getOrganizationId()));
+
+        if (organizationExists) {
+            throw new RuntimeException("Organization already exists with ID: "
+                    + organization.getOrganizationId());
+        }
+
+        organization.setStatus("ACT");
+        organizations.add(organization);
+
+        return organization;
+    }
+
+    public Organization update(String orgId, Organization updatedOrganization) {
+
+        Organization existingOrganization = organizations.stream()
+                .filter(org -> org.getOrganizationId().equalsIgnoreCase(orgId))
+                .filter(org -> "ACT".equalsIgnoreCase(org.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Organization not found with ID: " + orgId));
+
+        existingOrganization.setName(updatedOrganization.getName());
+        existingOrganization.setContactName(updatedOrganization.getContactName());
+        existingOrganization.setContactEmail(updatedOrganization.getContactEmail());
+        existingOrganization.setContactPhone(updatedOrganization.getContactPhone());
+
+        return existingOrganization;
+    }
+
+    public void delete(String orgId) {
+
+        Organization existingOrganization = organizations.stream()
+                .filter(org -> org.getOrganizationId().equalsIgnoreCase(orgId))
+                .filter(org -> "ACT".equalsIgnoreCase(org.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Organization not found with ID: " + orgId));
+
+        existingOrganization.setStatus("INA");
     }
 }
