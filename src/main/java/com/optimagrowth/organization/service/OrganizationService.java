@@ -2,6 +2,8 @@ package com.optimagrowth.organization.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.optimagrowth.organization.events.model.ActionType;
+import com.optimagrowth.organization.events.source.OrganizationChangePublisher;
 import com.optimagrowth.organization.model.Organization;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,12 @@ import java.util.List;
 public class OrganizationService {
 
     private List<Organization> organizations;
+
+    private final OrganizationChangePublisher organizationChangePublisher;
+
+    public OrganizationService(OrganizationChangePublisher organizationChangePublisher) {
+        this.organizationChangePublisher = organizationChangePublisher;
+    }
 
     /**
      * The {@code @PostConstruct} annotation is used to mark a method that should be
@@ -104,6 +112,8 @@ public class OrganizationService {
         organization.setStatus("ACT");
         organizations.add(organization);
 
+        organizationChangePublisher.publishOrganizationChange(ActionType.CREATE, organization.getOrganizationId());
+
         return organization;
     }
 
@@ -120,6 +130,8 @@ public class OrganizationService {
         existingOrganization.setContactEmail(updatedOrganization.getContactEmail());
         existingOrganization.setContactPhone(updatedOrganization.getContactPhone());
 
+        organizationChangePublisher.publishOrganizationChange(ActionType.UPDATED, existingOrganization.getOrganizationId());
+
         return existingOrganization;
     }
 
@@ -132,5 +144,7 @@ public class OrganizationService {
                 .orElseThrow(() -> new RuntimeException("Organization not found with ID: " + orgId));
 
         existingOrganization.setStatus("INA");
+
+        organizationChangePublisher.publishOrganizationChange(ActionType.DELETED, existingOrganization.getOrganizationId());
     }
 }
