@@ -2,7 +2,7 @@ package com.optimagrowth.organization.events.source;
 
 import com.optimagrowth.organization.events.model.ActionType;
 import com.optimagrowth.organization.events.model.OrganizationChangeModel;
-import com.optimagrowth.organization.utils.UserContext;
+import com.optimagrowth.organization.utils.UserContextHolder;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class OrganizationChangePublisher {
 
     public void publishOrganizationChange(ActionType action, String organizationId) {
         OrganizationChangeModel event = new OrganizationChangeModel(
-                UserContext.getCorrelationId(),
+                UserContextHolder.getContext().getCorrelationId(),
                 "ORGANIZATION_CHANGE",
                 action.name(),
                 organizationId,
