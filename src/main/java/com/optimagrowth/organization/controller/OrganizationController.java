@@ -2,7 +2,10 @@ package com.optimagrowth.organization.controller;
 
 import com.optimagrowth.organization.model.Organization;
 import com.optimagrowth.organization.service.OrganizationService;
+import com.optimagrowth.organization.utils.UserContextHolder;
 import jakarta.annotation.security.RolesAllowed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +19,18 @@ import java.util.Collection;
 @RequestMapping("/v1/organization")
 public class OrganizationController {
 
+    private static final Logger LOG = LoggerFactory.getLogger(OrganizationController.class);
+
+
     @Autowired
     private OrganizationService organizationService;
 
     @RolesAllowed({"ADMIN", "USER"})
     @GetMapping("/{organizationId}")
     public ResponseEntity<Organization> getOrganization(@PathVariable("organizationId") String orgId) {
+
+        LOG.info("getLicense; Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
+
         Organization org = organizationService.getOrganizationById(orgId);
         if (org == null) {
 //            throw new RuntimeException("Organization not found: " + orgId);
