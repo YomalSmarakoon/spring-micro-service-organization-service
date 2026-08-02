@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.optimagrowth.organization.events.model.ActionType;
 import com.optimagrowth.organization.events.source.OrganizationChangePublisher;
 import com.optimagrowth.organization.model.Organization;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +20,12 @@ public class OrganizationService {
 
     private final OrganizationChangePublisher organizationChangePublisher;
 
-    public OrganizationService(OrganizationChangePublisher organizationChangePublisher) {
+    private final ObservationRegistry observationRegistry;
+
+    public OrganizationService(OrganizationChangePublisher organizationChangePublisher,
+                                ObservationRegistry observationRegistry) {
         this.organizationChangePublisher = organizationChangePublisher;
+        this.observationRegistry = observationRegistry;
     }
 
     /**
@@ -85,11 +91,15 @@ public class OrganizationService {
     }
 
     public Organization getOrganizationById(String orgId) {
-        return organizations.stream()
-                .filter(org -> org.getOrganizationId().equalsIgnoreCase(orgId))
-                .filter(org -> "ACT".equalsIgnoreCase(org.getStatus()))
-                .findFirst()
-                .orElse(null);
+        // Custom business span so this lookup shows up named/tagged in Zipkin
+        // as the child of the inbound HTTP span, rather than as an opaque call.
+        return Observation.createNotStarted("organization.getOrganizationById", observationRegistry)
+                .lowCardinalityKeyValue("organizationId", orgId)
+                .observe(() -> organizations.stream()
+                        .filter(org -> org.getOrganizationId().equalsIgnoreCase(orgId))
+                        .filter(org -> "ACT".equalsIgnoreCase(org.getStatus()))
+                        .findFirst()
+                        .orElse(null));
     }
 
     public List<Organization> getAllOrganizations() {
