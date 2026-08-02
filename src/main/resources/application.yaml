@@ -23,6 +23,7 @@ spring:
       kafka:
         binder:
           brokers: localhost:9092
+          enable-observation: true # required for trace context propagation across Kafka messages
 
 eureka:
   client:
