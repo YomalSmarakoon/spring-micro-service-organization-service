@@ -1,0 +1,5 @@
+# [AI] - START
+target/
+.git/
+.idea/
+# [AI] - END

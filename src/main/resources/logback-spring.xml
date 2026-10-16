@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Read values from the Spring Environment -->
+    <springProperty
+            scope="context"
+            name="applicationName"
+            source="spring.application.name"
+            defaultValue="unknown-service"/>
+
+    <springProperty
+            scope="context"
+            name="applicationVersion"
+            source="info.app.version"
+            defaultValue="unknown"/>
+
+    <springProperty
+            scope="context"
+            name="logstashDestination"
+            source="logging.logstash.destination"
+            defaultValue="localhost:5000"/>
+
+    <springProperty
+            scope="context"
+            name="rootLogLevel"
+            source="logging.level.root"
+            defaultValue="INFO"/>
+
+    <!-- Spring Boot's default patterns and conversion rules -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Spring Boot's standard console appender -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Send JSON logs to Logstash -->
+    <appender
+            name="LOGSTASH"
+            class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+
+        <destination>${logstashDestination}</destination>
+
+        <!-- Optional protection for temporary logging bursts -->
+        <ringBufferSize>16384</ringBufferSize>
+        <appendTimeout>100</appendTimeout>
+
+        <!-- Optional protection against idle TCP disconnection -->
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>
+                {
+                "service": {
+                "name": "${applicationName}",
+                "version": "${applicationVersion}"
+                }
+                }
+            </customFields>
+        </encoder>
+    </appender>
+
+    <root level="${rootLogLevel}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOGSTASH"/>
+    </root>
+
+</configuration>
